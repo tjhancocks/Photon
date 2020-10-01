@@ -18,40 +18,31 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#if !defined(PHOTON_INSTANCE_HPP)
-#define PHOTON_INSTANCE_HPP
+#include "libPhoton/ui/page.hpp"
 
-#include <string>
-#include <map>
-#include <functional>
-#include "libPhoton/http/resource.hpp"
-#include "libPhoton/http/response.hpp"
-#include "libPhoton/ui/component.hpp"
+// MARK; - Construction
 
-namespace photon::http
+photon::web::ui::page::page(std::string title)
+    : m_title(std::move(title))
 {
-
-    class instance
-    {
-    private:
-        std::map<std::string, std::string> m_parameters;
-        photon::http::resource::handler_fn m_handler;
-        photon::http::status_code m_status { ok };
-        std::string m_status_reason { "Success" };
-        std::string m_body;
-
-    public:
-        explicit instance(std::map<std::string, std::string> params, photon::http::resource::handler_fn handler);
-
-        [[nodiscard]] auto parameter(const std::string& name) const -> std::string;
-
-        auto set_return_status(const photon::http::status_code& status, const std::string& message) -> void;
-        auto set_body(const std::string& body) -> void;
-        auto set_html_node(const std::shared_ptr<photon::web::ui::node> &root) -> void;
-
-        auto build_response(photon::http::response& response) -> void;
-    };
 
 }
 
-#endif //PHOTON_INSTANCE_HPP
+// MARK: - Rendering
+
+auto photon::web::ui::page::render() const -> std::shared_ptr<node>
+{
+    std::vector<std::shared_ptr<node>> content;
+    for (const auto& child : children()) {
+        content.emplace_back(child->render());
+    }
+
+    return std::make_shared<tag>("html", std::vector<std::shared_ptr<node>>({
+        std::make_shared<tag>("head", std::vector<std::shared_ptr<node>>({
+            std::make_shared<tag>("title", std::vector<std::shared_ptr<node>>({
+                std::make_shared<text>(m_title)
+            }))
+        })),
+        std::make_shared<tag>("body", std::vector<std::shared_ptr<node>>(content))
+    }));
+}

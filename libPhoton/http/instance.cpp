@@ -56,3 +56,9 @@ auto photon::http::instance::set_body(const std::string& body) -> void
 {
     m_body = body;
 }
+
+auto photon::http::instance::set_html_node(const std::shared_ptr<photon::web::ui::node> &root) -> void
+{
+    m_body = root->render();
+}
+

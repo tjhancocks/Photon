@@ -18,40 +18,56 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#if !defined(PHOTON_INSTANCE_HPP)
-#define PHOTON_INSTANCE_HPP
+#if !defined(PHOTON_HTML_HPP)
+#define PHOTON_HTML_HPP
 
 #include <string>
+#include <vector>
 #include <map>
-#include <functional>
-#include "libPhoton/http/resource.hpp"
-#include "libPhoton/http/response.hpp"
-#include "libPhoton/ui/component.hpp"
 
-namespace photon::http
+namespace photon::web::ui
 {
 
-    class instance
+    struct node
+    {
+        [[nodiscard]] virtual auto render() const -> std::string
+        {
+            return "";
+        };
+    };
+
+
+    struct text: public node
     {
     private:
-        std::map<std::string, std::string> m_parameters;
-        photon::http::resource::handler_fn m_handler;
-        photon::http::status_code m_status { ok };
-        std::string m_status_reason { "Success" };
-        std::string m_body;
+        std::string m_value;
 
     public:
-        explicit instance(std::map<std::string, std::string> params, photon::http::resource::handler_fn handler);
+        explicit text(std::string value);
 
-        [[nodiscard]] auto parameter(const std::string& name) const -> std::string;
+        [[nodiscard]] auto render() const -> std::string override;
+    };
 
-        auto set_return_status(const photon::http::status_code& status, const std::string& message) -> void;
-        auto set_body(const std::string& body) -> void;
-        auto set_html_node(const std::shared_ptr<photon::web::ui::node> &root) -> void;
 
-        auto build_response(photon::http::response& response) -> void;
+    struct tag: public node
+    {
+    private:
+        std::string m_id;
+        std::string m_name;
+        std::map<std::string, std::string> m_style;
+        std::map<std::string, std::string> m_attributes;
+        std::vector<std::shared_ptr<node>> m_children;
+
+    public:
+        explicit tag(std::string name);
+        tag(std::string name, std::vector<std::shared_ptr<node>> children);
+        tag(std::string name, std::vector<std::shared_ptr<node>> children, std::map<std::string, std::string> attrs);
+
+        auto set_style(const std::string& field, const std::string& value) -> void;
+
+        [[nodiscard]] auto render() const -> std::string override;
     };
 
 }
 
-#endif //PHOTON_INSTANCE_HPP
+#endif //PHOTON_HTML_HPP

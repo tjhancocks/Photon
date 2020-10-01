@@ -18,40 +18,11 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#if !defined(PHOTON_INSTANCE_HPP)
-#define PHOTON_INSTANCE_HPP
+#include "libPhoton/ui/splitview.hpp"
 
-#include <string>
-#include <map>
-#include <functional>
-#include "libPhoton/http/resource.hpp"
-#include "libPhoton/http/response.hpp"
-#include "libPhoton/ui/component.hpp"
-
-namespace photon::http
+auto photon::web::ui::splitview::render() const -> std::shared_ptr<node>
 {
+    auto view = std::make_shared<tag>("SplitView");
 
-    class instance
-    {
-    private:
-        std::map<std::string, std::string> m_parameters;
-        photon::http::resource::handler_fn m_handler;
-        photon::http::status_code m_status { ok };
-        std::string m_status_reason { "Success" };
-        std::string m_body;
-
-    public:
-        explicit instance(std::map<std::string, std::string> params, photon::http::resource::handler_fn handler);
-
-        [[nodiscard]] auto parameter(const std::string& name) const -> std::string;
-
-        auto set_return_status(const photon::http::status_code& status, const std::string& message) -> void;
-        auto set_body(const std::string& body) -> void;
-        auto set_html_node(const std::shared_ptr<photon::web::ui::node> &root) -> void;
-
-        auto build_response(photon::http::response& response) -> void;
-    };
-
+    return view;
 }
-
-#endif //PHOTON_INSTANCE_HPP
