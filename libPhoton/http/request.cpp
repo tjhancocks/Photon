@@ -23,6 +23,7 @@
 #include <algorithm>
 #include <vector>
 #include "libPhoton/http/request.hpp"
+#include "libPhoton/util/strings.hpp"
 
 // MARK: - Construction
 
@@ -47,35 +48,6 @@ auto photon::http::request::method() const -> std::string
 
 // MARK: - Request
 
-static inline auto trim(const std::string& str, const char& c) -> std::string
-{
-    if (str.length() == 1 && str[0] == c) {
-        return "";
-    }
-
-    auto first = str.find_first_not_of(c);
-    if (first == std::string::npos) {
-        return str;
-    }
-    auto last = str.find_last_not_of(c);
-    return str.substr(first, (last - first + 1));
-}
-
-static inline auto split(const std::string& str, const std::string& delimiter) -> std::vector<std::string>
-{
-    auto s = str;
-    std::size_t pos = 0;
-    std::vector<std::string> v;
-
-    while ((pos = s.find(delimiter)) != std::string::npos) {
-        v.emplace_back(s.substr(0, pos));
-        s.erase(0, pos + delimiter.length());
-    }
-    v.emplace_back(s);
-
-    return v;
-}
-
 auto photon::http::request::parse_request(const std::string &body) -> void
 {
     // Parse the request, line by line.
@@ -88,7 +60,7 @@ auto photon::http::request::parse_request(const std::string &body) -> void
     while (std::getline(stream, line, '\n')) {
         // If the line is empty, then we're switching from parsing headers, to consuming the
         // payload.
-        line = trim(trim(line, ' '), '\r');
+        line = utils::trim(utils::trim(line, ' '), '\r');
 
         if (line.empty() && headers) {
             headers = false;
@@ -110,7 +82,7 @@ auto photon::http::request::parse_request_line(const std::string &line, const in
 {
     if (number == 0) {
         // The request information line contains the method, path and version.
-        auto components = split(line, " ");
+        auto components = utils::split(line, " ");
 
         // Determine the request type - is it valid?
         for (const auto& method : method::all()) {
@@ -136,9 +108,9 @@ auto photon::http::request::parse_request_line(const std::string &line, const in
     }
     else {
         // Determine the header name and the value.
-        auto pair = split(line, ":");
-        auto name = trim(pair[0], ' ');
-        auto value = trim(pair[1], ' ');
+        auto pair = utils::split(line, ":");
+        auto name = utils::trim(pair[0], ' ');
+        auto value = utils::trim(pair[1], ' ');
 
         m_headers[name] = value;
     }

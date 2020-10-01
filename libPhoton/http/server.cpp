@@ -22,6 +22,7 @@
 #include "libPhoton/http/server.hpp"
 #include "libPhoton/socket/connection.hpp"
 #include "libPhoton/http/request.hpp"
+#include "libPhoton/http/instance.hpp"
 
 // MARK: - Construction
 
@@ -55,8 +56,10 @@ auto photon::http::server::handle_connection(photon::connection &connection) -> 
 
     // Find a resource to handle this request.
     for (const auto& resource : m_resources) {
-        if (resource.will_accept(request)) {
+        if (auto instance = resource.start_instance(request)) {
             // tell the resource to handle the request
+            instance->build_response(request.response());
+            connection.close();
             return;
         }
     }
@@ -75,5 +78,11 @@ auto photon::http::server::handle_connection(photon::connection &connection) -> 
 auto photon::http::server::add_resource(const photon::http::resource &resource) -> void
 {
     m_resources.emplace_back(resource);
+}
+
+auto photon::http::server::add_resource(const std::string &uri, const std::string &method,
+                                        const photon::http::resource::handler_fn& handler) -> void
+{
+    add_resource({ uri, method, handler });
 }
 

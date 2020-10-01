@@ -25,6 +25,7 @@
 #include <vector>
 #include "libPhoton/socket/socket.hpp"
 #include "libPhoton/http/resource.hpp"
+#include "libPhoton/http/instance.hpp"
 
 namespace photon::http
 {
@@ -45,6 +46,7 @@ namespace photon::http
         auto start() -> void;
 
         auto add_resource(const photon::http::resource& resource) -> void;
+        auto add_resource(const std::string& uri, const std::string& method, const photon::http::resource::handler_fn& handler) -> void;
 
     };
 

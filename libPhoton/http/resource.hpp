@@ -22,24 +22,34 @@
 #if !defined(PHOTON_RESOURCE_HPP)
 #define PHOTON_RESOURCE_HPP
 
+#include <map>
 #include <string>
+#include <functional>
+#include <memory>
+#include <tuple>
 #include "libPhoton/http/method.hpp"
 #include "libPhoton/http/request.hpp"
+#include "libPhoton/http/status_code.hpp"
 
 namespace photon::http
 {
 
+    class instance;
+
     class resource
     {
+    public:
+        typedef std::function<auto(instance&)->void> handler_fn;
+
     private:
         std::string m_uri_pattern;
         std::string m_method;
+        handler_fn m_handler;
 
     public:
-        resource(std::string  uri, std::string  method = method::GET);
+        resource(std::string uri, std::string method, handler_fn body);
 
-        auto will_accept(const photon::http::request& request) const -> bool;
-
+        [[nodiscard]] auto start_instance(const photon::http::request& request) const -> std::shared_ptr<photon::http::instance>;
     };
 
 }

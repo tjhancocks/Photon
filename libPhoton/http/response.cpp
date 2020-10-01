@@ -35,6 +35,11 @@ auto photon::http::response::set_header(const std::string &header, const std::st
     m_headers[header] = value;
 }
 
+auto photon::http::response::set_body(const std::string &body) -> void
+{
+    m_body = body;
+}
+
 // MARK: - Send
 
 auto photon::http::response::send() -> void
@@ -53,7 +58,7 @@ auto photon::http::response::send() -> void
         payload.append(header.first + ": " + header.second + "\r\n");
     }
 
-    payload.append("\r\n");
+    payload.append("\r\n" + m_body);
 
     // Send the payload...
     m_connection.write(payload);
@@ -65,3 +70,4 @@ auto photon::http::response::set_status(const photon::http::status_code &code, c
     m_status = code;
     m_reason = reason;
 }
+
